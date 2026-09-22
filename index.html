@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EditbyNahid | Professional Video Editing Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#08080D',
+                        cardBg: '#11111A',
+                        primaryPurple: '#6C4BF4',
+                        accentBlue: '#00C2FF',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 3s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { opacity: 0.4 },
+                            '100%': { opacity: 0.8 },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #08080D;
+            color: #FFFFFF;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(17, 17, 26, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(108, 75, 244, 0.15);
+        }
+        .glass-card {
+            background: rgba(17, 17, 26, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(108, 75, 244, 0.4);
+            box-shadow: 0 0 25px rgba(108, 75, 244, 0.2);
+            transform: translateY(-4px);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #FFFFFF 0%, #00C2FF 50%, #6C4BF4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #6C4BF4 0%, #00C2FF 100%);
+        }
+        .glow-purple {
+            box-shadow: 0 0 30px rgba(108, 75, 244, 0.3);
+        }
+        .glow-blue {
+            box-shadow: 0 0 30px rgba(0, 194, 255, 0.3);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08080D;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #11111A;
+            border-radius: 4px;
+            border: 1px solid rgba(108, 75, 244, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6C4BF4;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-white antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Background Ambient Glows -->
+    <div class="fixed top-0 left-1/4 w-96 h-96 bg-primaryPurple/15 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-slow"></div>
+    <div class="fixed bottom-10 right-1/4 w-96 h-96 bg-accentBlue/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-slow"></div>
+
+    <div id="app" class="flex flex-col min-h-screen justify-between w-full">
+        <!-- Application container managed dynamically -->
+    </div>
+
+    <!-- Notification Toast Modal Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Video Modal Player -->
+    <div id="video-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl max-w-4xl w-full p-4 relative border border-primaryPurple/30">
+            <button onclick="closeVideoModal()" class="absolute -top-4 -right-4 bg-primaryPurple text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition z-10">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="modal-video-container" class="relative aspect-video w-full bg-black rounded-xl overflow-hidden flex items-center justify-center">
+                <!-- Video player or iframe injected here -->
+            </div>
+            <div class="mt-4">
+                <h3 id="modal-video-title" class="text-xl font-bold text-white"></h3>
+                <p id="modal-video-desc" class="text-gray-400 text-sm mt-1"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quote Request Modal -->
+    <div id="quote-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel rounded-2xl max-w-lg w-full p-6 relative border border-primaryPurple/30">
+            <button onclick="closeQuoteModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-2xl font-bold gradient-text mb-2">Request a Custom Quote</h3>
+            <p class="text-gray-400 text-sm mb-6">Tell us about your project specifications and we'll get back to you within 24 hours.</p>
+            <form id="quote-form" onsubmit="handleQuoteSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Project Type</label>
+                    <select id="quote-type" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                        <option value="YouTube Long Form" class="bg-cardBg">YouTube Long Form</option>
+                        <option value="Shorts / Reels / TikTok" class="bg-cardBg">Shorts / Reels / TikTok</option>
+                        <option value="Gaming Montage" class="bg-cardBg">Gaming Montage</option>
+                        <option value="Commercial / Promo" class="bg-cardBg">Commercial / Promo</option>
+                        <option value="Custom Bundle" class="bg-cardBg">Custom Bundle</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Estimated Budget ($)</label>
+                    <input type="text" id="quote-budget" placeholder="e.g. $250 - $500" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Project Details</label>
+                    <textarea id="quote-details" rows="4" placeholder="Describe deliverables, deadline, and expectations..." required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple"></textarea>
+                </div>
+                <button type="submit" class="w-full py-3 gradient-bg font-semibold rounded-xl shadow-lg hover:opacity-95 transition">Submit Quote Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs & Main Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            GoogleAuthProvider, 
+            signInWithPopup,
+            sendPasswordResetEmail,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            getDocs, 
+            addDoc, 
+            updateDoc, 
+            onSnapshot,
+            query,
+            where
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase handles
+        let app, db, auth;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'editbynahid-default-app';
+        
+        try {
+            const firebaseConfig = JSON.parse(__firebase_config);
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch(e) {
+            console.warn("Firebase config fallback initializing simulation mode", e);
+        }
+
+        // Application State
+        let currentUser = null;
+        let currentView = 'home'; // 'auth', 'home', 'services', 'portfolio', 'pricing', 'order', 'contact', 'dashboard'
+        let userProjects = [];
+        let userRequests = [];
+        let selectedPortfolioCategory = 'ALL';
+
+        // Sample Portfolio Data
+        const portfolioItems = [
+            { id: 1, title: "Cyberpunk Gaming Montage", category: "GAMING", desc: "High-octane Valorant edits with custom sound design and beat sync.", type: "youtube", src: "https://www.youtube.com/embed/dQw4w9WgXcQ", thumb: "https://placehold.co/600x340/11111A/6C4BF4?text=Gaming+Montage" },
+            { id: 2, title: "Viral TikTok Transition Guide", category: "TIKTOK", desc: "Fast-paced educational reel with dynamic captions and pop sound effects.", type: "tiktok", src: "https://www.youtube.com/embed/dQw4w9WgXcQ", thumb: "https://placehold.co/600x340/11111A/00C2FF?text=TikTok+Reel" },
+            { id: 3, title: "Tech Startup YouTube Docu-Style", category: "YOUTUBE", desc: "Cinematic 12-minute documentary exploring AI future with advanced color grading.", type: "youtube", src: "https://www.youtube.com/embed/dQw4w9WgXcQ", thumb: "https://placehold.co/600x340/11111A/6C4BF4?text=YouTube+Docu" },
+            { id: 4, title: "Lifestyle Instagram Reel Aesthetic", category: "REELS", desc: "Smooth minimal transitions, lofi aesthetics, and color grading for fashion brand.", type: "reels", src: "https://www.youtube.com/embed/dQw4w9WgXcQ", thumb: "https://placehold.co/600x340/11111A/00C2FF?text=Reels+Edit" },
+            { id: 5, title: "Apex Legends Epic Clutch", category: "GAMING", desc: "Clean kills compilation synced directly to hard bass drop audio tracks.", type: "youtube", src: "https://www.youtube.com/embed/dQw4w9WgXcQ", thumb: "https://placehold.co/600x340/11111A/6C4BF4?text=Apex+Clutch" },
+            { id: 6, title: "Crypto Podcast Highlights", category: "TIKTOK", desc: "Engaging hook with dynamic text tracking and multi-cam layout.", type: "tiktok", src: "https://www.youtube.com/embed/dQw4w9WgXcQ", thumb: "https://placehold.co/600x340/11111A/00C2FF?text=Podcast+Clip" }
+        ];
+
+        window.onload = async () => {
+            if (auth) {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (err) {
+                        console.error("Custom token sign in failed", err);
+                    }
+                }
+                onAuthStateChanged(auth, async (user) => {
+                    currentUser = user;
+                    if (user) {
+                        await loadUserData();
+                        if (currentView === 'auth') currentView = 'home';
+                    } else {
+                        // If not logged in and trying to access protected views, force auth
+                        if (['order', 'dashboard'].includes(currentView)) {
+                            currentView = 'auth';
+                        }
+                    }
+                    renderApp();
+                });
+            } else {
+                // Mock user for local testing if firebase config is missing
+                renderApp();
+            }
+        };
+
+        async function loadUserData() {
+            if (!currentUser || !db) return;
+            try {
+                const uid = currentUser.uid;
+                
+                // Fetch Projects
+                const projRef = collection(db, 'artifacts', appId, 'users', uid, 'projects');
+                const projSnap = await getDocs(query(projRef));
+                userProjects = [];
+                projSnap.forEach(docSnap => {
+                    userProjects.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                
+                // If empty, seed initial sample project
+                if (userProjects.length === 0) {
+                    const sampleProj = { title: "YouTube Cinematic Vlog #1", status: "In Progress", deadline: "2026-04-12", createdAt: new Date().toISOString() };
+                    const newRef = await addDoc(projRef, sampleProj);
+                    userProjects.push({ id: newRef.id, ...sampleProj });
+                }
+
+                // Fetch Requests
+                const reqRef = collection(db, 'artifacts', appId, 'users', uid, 'requests');
+                const reqSnap = await getDocs(query(reqRef));
+                userRequests = [];
+                reqSnap.forEach(docSnap => {
+                    userRequests.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+            } catch (err) {
+                console.error("Error loading user data from Firestore:", err);
+            }
+        }
+
+        // Toast Notification System
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `glass-panel pointer-events-auto px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border transition-all duration-300 translate-y-5 opacity-0 ${type === 'success' ? 'border-green-500/40 text-green-400' : 'border-red-500/40 text-red-400'}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'} text-lg"></i><span class="text-white text-sm font-medium">${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-5', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-5', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Navigation Controller
+        window.navigateTo = function(view) {
+            if (['order', 'dashboard'].includes(view) && !currentUser) {
+                showToast("Please log in to access this page.", "error");
+                currentView = 'auth';
+                renderApp();
+                return;
+            }
+            currentView = view;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            renderApp();
+        }
+
+        window.renderApp = function() {
+            const appEl = document.getElementById('app');
+            
+            let contentHTML = '';
+            if (currentView === 'auth') {
+                contentHTML = renderAuthView();
+            } else {
+                contentHTML = `
+                    ${renderNavbar()}
+                    <main class="flex-grow">
+                        ${currentView === 'home' ? renderHomeView() : ''}
+                        ${currentView === 'services' ? renderServicesView() : ''}
+                        ${currentView === 'portfolio' ? renderPortfolioView() : ''}
+                        ${currentView === 'pricing' ? renderPricingView() : ''}
+                        ${currentView === 'order' ? renderOrderView() : ''}
+                        ${currentView === 'contact' ? renderContactView() : ''}
+                        ${currentView === 'dashboard' ? renderDashboardView() : ''}
+                    </main>
+                    ${renderFooter()}
+                `;
+            }
+            appEl.innerHTML = contentHTML;
+            attachEventHandlers();
+        }
+
+        function renderNavbar() {
+            const isLoggedIn = currentUser !== null;
+            return `
+            <header class="sticky top-0 z-40 glass-panel border-b border-white/10 px-4 lg:px-12 py-4 transition-all">
+                <div class="max-w-7xl mx-auto flex items-center justify-between">
+                    <!-- Logo -->
+                    <div onclick="navigateTo('home')" class="cursor-pointer flex items-center gap-2 group">
+                        <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg group-hover:scale-105 transition glow-purple">
+                            <i class="fa-solid fa-clapperboard text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-extrabold tracking-tight gradient-text">EDITBYNAHID</span>
+                    </div>
+
+                    <!-- Desktop Navigation Links -->
+                    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+                        <button onclick="navigateTo('home')" class="hover:text-accentBlue transition ${currentView === 'home' ? 'text-accentBlue font-bold' : ''}">Home</button>
+                        <button onclick="navigateTo('services')" class="hover:text-accentBlue transition ${currentView === 'services' ? 'text-accentBlue font-bold' : ''}">Services</button>
+                        <button onclick="navigateTo('portfolio')" class="hover:text-accentBlue transition ${currentView === 'portfolio' ? 'text-accentBlue font-bold' : ''}">Portfolio</button>
+                        <button onclick="navigateTo('pricing')" class="hover:text-accentBlue transition ${currentView === 'pricing' ? 'text-accentBlue font-bold' : ''}">Pricing</button>
+                        <button onclick="navigateTo('contact')" class="hover:text-accentBlue transition ${currentView === 'contact' ? 'text-accentBlue font-bold' : ''}">Contact</button>
+                        ${isLoggedIn ? `<button onclick="navigateTo('dashboard')" class="hover:text-accentBlue transition ${currentView === 'dashboard' ? 'text-accentBlue font-bold' : ''}">My Account</button>` : ''}
+                    </nav>
+
+                    <!-- Right User Action / Auth -->
+                    <div class="hidden md:flex items-center gap-4">
+                        ${isLoggedIn ? `
+                            <div class="flex items-center gap-3 glass-panel px-4 py-2 rounded-xl border border-white/10">
+                                <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center font-bold text-sm">
+                                    ${(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <span class="text-xs font-semibold text-gray-200 truncate max-w-[120px]">${currentUser.displayName || currentUser.email}</span>
+                            </div>
+                            <button onclick="handleLogout()" class="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/20 transition flex items-center gap-2">
+                                <i class="fa-solid fa-right-from-bracket"></i> Logout
+                            </button>
+                        ` : `
+                            <button onclick="navigateTo('auth')" class="px-5 py-2.5 gradient-bg rounded-xl font-semibold text-sm shadow-lg hover:opacity-95 transition glow-purple">
+                                Sign In / Register
+                            </button>
+                        `}
+                        <button onclick="navigateTo('order')" class="px-5 py-2.5 bg-accentBlue/20 border border-accentBlue/50 text-accentBlue rounded-xl font-semibold text-sm hover:bg-accentBlue/30 transition glow-blue">
+                            Order Edit
+                        </button>
+                    </div>
+
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white text-2xl focus:outline-none">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile Dropdown -->
+                <div id="mobile-menu" class="hidden md:hidden pt-4 pb-2 border-t border-white/10 mt-4 flex flex-col gap-3">
+                    <button onclick="navigateTo('home'); toggleMobileMenu();" class="text-left py-2 px-3 rounded-lg hover:bg-white/5">Home</button>
+                    <button onclick="navigateTo('services'); toggleMobileMenu();" class="text-left py-2 px-3 rounded-lg hover:bg-white/5">Services</button>
+                    <button onclick="navigateTo('portfolio'); toggleMobileMenu();" class="text-left py-2 px-3 rounded-lg hover:bg-white/5">Portfolio</button>
+                    <button onclick="navigateTo('pricing'); toggleMobileMenu();" class="text-left py-2 px-3 rounded-lg hover:bg-white/5">Pricing</button>
+                    <button onclick="navigateTo('contact'); toggleMobileMenu();" class="text-left py-2 px-3 rounded-lg hover:bg-white/5">Contact</button>
+                    ${isLoggedIn ? `
+                        <button onclick="navigateTo('dashboard'); toggleMobileMenu();" class="text-left py-2 px-3 rounded-lg hover:bg-white/5 text-accentBlue font-bold">My Account</button>
+                        <button onclick="handleLogout(); toggleMobileMenu();" class="text-left py-2 px-3 rounded-lg hover:bg-red-500/10 text-red-400">Logout</button>
+                    ` : `
+                        <button onclick="navigateTo('auth'); toggleMobileMenu();" class="w-full py-2.5 gradient-bg rounded-xl text-center font-semibold">Sign In / Register</button>
+                    `}
+                    <button onclick="navigateTo('order'); toggleMobileMenu();" class="w-full py-2.5 bg-accentBlue/20 text-accentBlue border border-accentBlue/40 rounded-xl text-center font-semibold">Order Edit</button>
+                </div>
+            </header>
+            `;
+        }
+
+        let authMode = 'login'; // 'login' or 'signup' or 'forgot'
+        function renderAuthView() {
+            return `
+            <div class="min-h-screen flex items-center justify-center px-4 py-12 relative">
+                <div class="absolute inset-0 bg-gradient-to-br from-primaryPurple/10 via-transparent to-accentBlue/15 -z-10"></div>
+                <div class="glass-panel p-8 md:p-10 rounded-3xl max-w-md w-full border border-primaryPurple/30 shadow-2xl relative">
+                    <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center shadow-xl glow-purple">
+                        <i class="fa-solid fa-clapperboard text-3xl text-white"></i>
+                    </div>
+                    
+                    <div class="text-center mt-6 mb-8">
+                        <h2 class="text-3xl font-extrabold gradient-text">EditbyNahid Studio</h2>
+                        <p class="text-gray-400 text-sm mt-1">Professional video editing portal</p>
+                    </div>
+
+                    <!-- Auth Tabs -->
+                    <div class="flex rounded-xl bg-black/40 p-1 mb-6 border border-white/10">
+                        <button onclick="setAuthMode('login')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition ${authMode === 'login' ? 'gradient-bg text-white shadow' : 'text-gray-400 hover:text-white'}">Login</button>
+                        <button onclick="setAuthMode('signup')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition ${authMode === 'signup' ? 'gradient-bg text-white shadow' : 'text-gray-400 hover:text-white'}">Sign Up</button>
+                    </div>
+
+                    ${authMode === 'login' ? `
+                        <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Email or Username</label>
+                                <input type="text" id="login-identifier" placeholder="name@example.com" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Password</label>
+                                <input type="password" id="login-password" placeholder="••••••••" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <label class="flex items-center gap-2 text-gray-400 cursor-pointer"><input type="checkbox" class="rounded bg-black/50 border-white/10"> Remember me</label>
+                                <button type="button" onclick="setAuthMode('forgot')" class="text-accentBlue hover:underline">Forgot password?</button>
+                            </div>
+                            <button type="submit" class="w-full py-3.5 gradient-bg rounded-xl font-bold shadow-lg hover:opacity-95 transition glow-purple">Login to Account</button>
+                        </form>
+                    ` : authMode === 'signup' ? `
+                        <form onsubmit="handleSignupSubmit(event)" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">First Name</label>
+                                    <input type="text" id="signup-firstname" placeholder="Nahid" required class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-primaryPurple text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Last Name</label>
+                                    <input type="text" id="signup-lastname" placeholder="Hasan" required class="w-full bg-black/50 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-primaryPurple text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Email</label>
+                                <input type="email" id="signup-email" placeholder="name@example.com" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primaryPurple text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Username</label>
+                                <input type="text" id="signup-username" placeholder="nahid_editor" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primaryPurple text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Password</label>
+                                <input type="password" id="signup-password" placeholder="At least 6 chars" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primaryPurple text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Confirm Password</label>
+                                <input type="password" id="signup-confirm" placeholder="••••••••" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primaryPurple text-sm">
+                            </div>
+                            <button type="submit" class="w-full py-3.5 gradient-bg rounded-xl font-bold shadow-lg hover:opacity-95 transition glow-purple">Create Account</button>
+                        </form>
+                    ` : `
+                        <form onsubmit="handleForgotSubmit(event)" class="space-y-4">
+                            <p class="text-sm text-gray-300">Enter your account email address and we'll send you a password reset link.</p>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Email Address</label>
+                                <input type="email" id="forgot-email" placeholder="name@example.com" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                            <button type="submit" class="w-full py-3.5 gradient-bg rounded-xl font-bold shadow-lg hover:opacity-95 transition glow-purple">Send Reset Link</button>
+                            <button type="button" onclick="setAuthMode('login')" class="w-full py-2 text-sm text-gray-400 hover:text-white text-center">Back to Login</button>
+                        </form>
+                    `}
+
+                    <div class="mt-6">
+                        <div class="relative flex py-2 items-center">
+                            <div class="flex-grow border-t border-white/10"></div>
+                            <span class="flex-shrink mx-4 text-gray-500 text-xs uppercase tracking-widest">Or continue with</span>
+                            <div class="flex-grow border-t border-white/10"></div>
+                        </div>
+                        <button onclick="handleGoogleLogin()" class="mt-4 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-semibold flex items-center justify-center gap-3 transition">
+                            <i class="fa-brands fa-google text-accentBlue"></i> Continue with Google
+                        </button>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <button onclick="navigateTo('home')" class="text-xs text-gray-400 hover:text-white transition flex items-center justify-center gap-2 mx-auto">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Homepage
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        window.setAuthMode = function(mode) {
+            authMode = mode;
+            renderApp();
+        }
+
+        function renderHomeView() {
+            return `
+            <!-- Hero Section -->
+            <section class="relative min-h-[90vh] flex items-center justify-center px-4 lg:px-12 py-20 overflow-hidden">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full relative z-10">
+                    <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-primaryPurple/40 text-xs font-semibold text-accentBlue">
+                            <span class="w-2 h-2 rounded-full bg-accentBlue animate-ping"></span> Pro Video Editing Studio 2026
+                        </div>
+                        <h1 class="text-5xl lg:text-7xl font-extrabold tracking-tight leading-none uppercase">
+                            YOUR VISION.<br><span class="gradient-text">MY EDIT.</span>
+                        </h1>
+                        <p class="text-lg text-gray-300 max-w-xl mx-auto lg:mx-0 font-normal">
+                            Professional video editing for TikTok, Instagram, YouTube, gaming content and more. Transform your raw footage into cinematic masterpieces.
+                        </p>
+                        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
+                            <button onclick="navigateTo('order')" class="px-8 py-4 gradient-bg rounded-2xl font-bold shadow-xl hover:opacity-95 transition glow-purple flex items-center gap-3 text-base">
+                                <i class="fa-solid fa-bolt"></i> Get Started
+                            </button>
+                            <button onclick="navigateTo('portfolio')" class="px-8 py-4 glass-panel border border-white/10 rounded-2xl font-bold hover:bg-white/5 transition flex items-center gap-3 text-base">
+                                <i class="fa-solid fa-play"></i> View My Work
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/10 max-w-lg mx-auto lg:mx-0">
+                            <div>
+                                <h4 class="text-3xl font-black gradient-text">250+</h4>
+                                <p class="text-xs text-gray-400 mt-1">Projects Completed</p>
+                            </div>
+                            <div>
+                                <h4 class="text-3xl font-black gradient-text">99%</h4>
+                                <p class="text-xs text-gray-400 mt-1">Client Satisfaction</p>
+                            </div>
+                            <div>
+                                <h4 class="text-3xl font-black gradient-text">24h</h4>
+                                <p class="text-xs text-gray-400 mt-1">Fast Turnaround</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 relative flex items-center justify-center">
+                        <div class="w-full aspect-square max-w-md rounded-3xl glass-panel p-6 border border-primaryPurple/30 shadow-2xl relative animate-float">
+                            <div class="absolute inset-0 bg-gradient-to-tr from-primaryPurple/20 to-accentBlue/20 rounded-3xl filter blur-xl -z-10"></div>
+                            <!-- Mock Video Timeline UI -->
+                            <div class="flex flex-col h-full justify-between">
+                                <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                    </div>
+                                    <span class="text-xs font-mono text-gray-400">EDITBYNAHID_TIMELINE_v2.prproj</span>
+                                </div>
+                                <div class="aspect-video bg-black/60 rounded-xl relative overflow-hidden flex items-center justify-center group cursor-pointer" onclick="navigateTo('portfolio')">
+                                    <img src="https://placehold.co/600x340/11111A/6C4BF4?text=Preview+Reel" alt="Showcase" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition">
+                                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                        <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center shadow-xl glow-purple text-xl">
+                                            <i class="fa-solid fa-play ml-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Timeline tracks simulation -->
+                                <div class="space-y-2 pt-2">
+                                    <div class="h-6 bg-primaryPurple/30 rounded-lg w-full flex items-center px-2 text-[10px] font-mono text-primaryPurple font-bold">V1 • A7_Cinematic_Footage.mp4</div>
+                                    <div class="h-6 bg-accentBlue/20 rounded-lg w-3/4 flex items-center px-2 text-[10px] font-mono text-accentBlue font-bold">A1 • Epic_Bass_Drop.wav</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            `;
+        }
+
+        function renderServicesView() {
+            const services = [
+                { icon: "fa-film", title: "SHORT FORM EDITING", desc: "TikTok, Instagram Reels and YouTube Shorts optimized for high retention and viral algorithm reach.", tag: "Popular" },
+                { icon: "fa-video", title: "YOUTUBE EDITING", desc: "Complete professional YouTube video montage, sound mixing, pacing, and engaging b-rolls.", tag: "Best Value" },
+                { icon: "fa-gamepad", title: "GAMING EDITING", desc: "Gaming highlights, montages, clips, and funny moments with meme inserts and sound effects.", tag: "Dynamic" },
+                { icon: "fa-share-nodes", title: "SOCIAL MEDIA EDITING", desc: "Tailored video content optimized for LinkedIn, Twitter/X, and Facebook feeds.", tag: "Growth" },
+                { icon: "fa-image", title: "THUMBNAILS", desc: "High-CTR custom YouTube thumbnails designed to skyrocket click-through rates.", tag: "Design" },
+                { icon: "fa-wand-magic-sparkles", title: "SPECIAL EFFECTS", desc: "Advanced transitions, visual effects, animated subtitles, sound design, and color grading.", tag: "Cinematic" }
+            ];
+
+            return `
+            <section class="max-w-7xl mx-auto px-4 lg:px-12 py-20">
+                <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                    <span class="text-xs uppercase tracking-widest text-accentBlue font-bold px-3 py-1 rounded-full glass-panel border border-accentBlue/30">Expertise</span>
+                    <h2 class="text-4xl lg:text-5xl font-black uppercase">WHAT I CAN DO FOR YOU</h2>
+                    <p class="text-gray-400">Professional grade editing tools, techniques, and storytelling frameworks to elevate your content.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    ${services.map(s => `
+                        <div class="glass-card p-8 rounded-3xl relative group flex flex-col justify-between">
+                            <span class="absolute top-6 right-6 text-[10px] font-bold uppercase px-3 py-1 rounded-full bg-primaryPurple/20 text-accentBlue border border-primaryPurple/30">${s.tag}</span>
+                            <div>
+                                <div class="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center text-2xl shadow-lg glow-purple mb-6 group-hover:scale-110 transition">
+                                    <i class="fa-solid ${s.icon}"></i>
+                                </div>
+                                <h3 class="text-xl font-bold mb-3">${s.title}</h3>
+                                <p class="text-gray-400 text-sm leading-relaxed">${s.desc}</p>
+                            </div>
+                            <div class="pt-6 mt-6 border-t border-white/5 flex items-center justify-between">
+                                <span class="text-xs text-accentBlue font-semibold group-hover:translate-x-1 transition cursor-pointer" onclick="navigateTo('order')">Book Service &rarr;</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </section>
+            `;
+        }
+
+        function renderPortfolioView() {
+            const categories = ['ALL', 'TIKTOK', 'YOUTUBE', 'GAMING', 'REELS'];
+            const filteredItems = selectedPortfolioCategory === 'ALL' 
+                ? portfolioItems 
+                : portfolioItems.filter(item => item.category === selectedPortfolioCategory);
+
+            return `
+            <section class="max-w-7xl mx-auto px-4 lg:px-12 py-20">
+                <div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
+                    <span class="text-xs uppercase tracking-widest text-accentBlue font-bold px-3 py-1 rounded-full glass-panel border border-accentBlue/30">Showcase</span>
+                    <h2 class="text-4xl lg:text-5xl font-black uppercase">MY WORK</h2>
+                    <p class="text-gray-400">Explore past client projects across multiple content verticals.</p>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="flex flex-wrap items-center justify-center gap-3 mb-12">
+                    ${categories.map(cat => `
+                        <button onclick="setPortfolioCategory('${cat}')" class="px-6 py-2.5 rounded-xl font-semibold text-sm transition ${selectedPortfolioCategory === cat ? 'gradient-bg text-white shadow-lg glow-purple' : 'glass-panel text-gray-400 hover:text-white border border-white/10'}">
+                            ${cat}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <!-- Portfolio Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    ${filteredItems.map(item => `
+                        <div class="glass-card rounded-3xl overflow-hidden group cursor-pointer" onclick="openVideoModal('${item.title}', '${item.desc}', '${item.src}')">
+                            <div class="relative aspect-video overflow-hidden bg-black/40">
+                                <img src="${item.thumb}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                    <div class="w-14 h-14 rounded-full gradient-bg flex items-center justify-center shadow-xl glow-purple text-xl">
+                                        <i class="fa-solid fa-play ml-1"></i>
+                                    </div>
+                                </div>
+                                <span class="absolute top-4 left-4 text-[10px] font-bold uppercase px-3 py-1 rounded-full bg-black/70 backdrop-blur text-accentBlue border border-white/10">${item.category}</span>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-lg font-bold group-hover:text-accentBlue transition">${item.title}</h3>
+                                <p class="text-gray-400 text-xs mt-2 line-clamp-2">${item.desc}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </section>
+            `;
+        }
+
+        window.setPortfolioCategory = function(cat) {
+            selectedPortfolioCategory = cat;
+            renderApp();
+        }
+
+        window.openVideoModal = function(title, desc, src) {
+            document.getElementById('modal-video-title').innerText = title;
+            document.getElementById('modal-video-desc').innerText = desc;
+            document.getElementById('modal-video-container').innerHTML = `
+                <iframe src="${src}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            `;
+            document.getElementById('video-modal').classList.remove('hidden');
+        }
+
+        window.closeVideoModal = function() {
+            document.getElementById('video-modal').classList.add('hidden');
+            document.getElementById('modal-video-container').innerHTML = '';
+        }
+
+        function renderPricingView() {
+            const plans = [
+                { name: "STARTER", subtitle: "For simple short videos and quick clips", desc: "Ideal for TikTokers and creators starting out.", features: ["Up to 1 min per video", "Basic cuts & transitions", "Dynamic subtitles", "1 Revision round", "48h Turnaround"], highlight: false },
+                { name: "PRO", subtitle: "For advanced professional video editing", desc: "Best for YouTube creators and active streamers.", features: ["Up to 15 mins per video", "Advanced sound effects & grading", "Custom motion graphics", "3 Revision rounds", "24h Priority Turnaround"], highlight: true },
+                { name: "PREMIUM", subtitle: "For complete commercial production", desc: "Enterprise level cinematic editing & storytelling.", features: ["Unlimited duration", "Cinematic color grading & VFX", "Custom thumbnail included", "Dedicated editor support", "Same-day rush delivery"], highlight: false }
+            ];
+
+            return `
+            <section class="max-w-7xl mx-auto px-4 lg:px-12 py-20">
+                <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                    <span class="text-xs uppercase tracking-widest text-accentBlue font-bold px-3 py-1 rounded-full glass-panel border border-accentBlue/30">Transparent Plans</span>
+                    <h2 class="text-4xl lg:text-5xl font-black uppercase">FLEXIBLE PRICING</h2>
+                    <p class="text-gray-400">Custom tailored packages based on your project requirements and scope.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+                    ${plans.map(p => `
+                        <div class="glass-card p-8 rounded-3xl relative flex flex-col justify-between ${p.highlight ? 'border-primaryPurple/80 glow-purple bg-gradient-to-b from-primaryPurple/10 to-cardBg' : ''}">
+                            ${p.highlight ? '<span class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full gradient-bg text-xs font-extrabold uppercase shadow-lg">Most Popular</span>' : ''}
+                            <div>
+                                <h3 class="text-2xl font-black">${p.name}</h3>
+                                <p class="text-gray-400 text-xs mt-1 mb-6">${p.subtitle}</p>
+                                <p class="text-sm text-gray-300 pb-6 border-b border-white/10 mb-6">${p.desc}</p>
+                                <ul class="space-y-4 mb-8">
+                                    ${p.features.map(f => `
+                                        <li class="flex items-center gap-3 text-sm text-gray-200">
+                                            <i class="fa-solid fa-check text-accentBlue"></i> ${f}
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <button onclick="openQuoteModal()" class="w-full py-4 ${p.highlight ? 'gradient-bg font-bold shadow-lg glow-purple' : 'glass-panel border border-white/10 hover:bg-white/5'} rounded-xl transition">
+                                    Get a Quote
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </section>
+            `;
+        }
+
+        window.openQuoteModal = function() {
+            document.getElementById('quote-modal').classList.remove('hidden');
+        }
+        window.closeQuoteModal = function() {
+            document.getElementById('quote-modal').classList.add('hidden');
+        }
+        window.handleQuoteSubmit = function(e) {
+            e.preventDefault();
+            closeQuoteModal();
+            showToast("Your quote request has been sent successfully! Nahid will contact you shortly.");
+        }
+
+        function renderOrderView() {
+            return `
+            <section class="max-w-4xl mx-auto px-4 py-16">
+                <div class="glass-panel p-8 md:p-12 rounded-3xl border border-primaryPurple/30 shadow-2xl relative">
+                    <div class="text-center mb-10">
+                        <span class="text-xs uppercase tracking-widest text-accentBlue font-bold px-3 py-1 rounded-full glass-panel border border-accentBlue/30">Project Booking</span>
+                        <h2 class="text-3xl md:text-4xl font-black mt-3 uppercase">ORDER YOUR EDIT</h2>
+                        <p class="text-gray-400 text-sm mt-2">Fill in your video requirements and upload assets to begin production.</p>
+                    </div>
+
+                    <form onsubmit="handleOrderSubmit(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Your Name</label>
+                                <input type="text" id="order-name" value="${currentUser?.displayName || ''}" placeholder="Nahid Hasan" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Email Address</label>
+                                <input type="email" id="order-email" value="${currentUser?.email || ''}" placeholder="name@example.com" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Video Type</label>
+                                <select id="order-type" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                                    <option value="Short Form (TikTok/Reels)" class="bg-cardBg">Short Form (TikTok/Reels)</option>
+                                    <option value="YouTube Long Form" class="bg-cardBg">YouTube Long Form</option>
+                                    <option value="Gaming Montage" class="bg-cardBg">Gaming Montage</option>
+                                    <option value="Social Media Promo" class="bg-cardBg">Social Media Promo</option>
+                                    <option value="Custom Thumbnail" class="bg-cardBg">Custom Thumbnail</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Estimated Length</label>
+                                <input type="text" id="order-length" placeholder="e.g. 10 minutes" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Deadline / Target Date</label>
+                                <input type="date" id="order-deadline" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Project Description</label>
+                            <textarea id="order-desc" rows="4" placeholder="Detail your storyline, pacing preferences, references..." required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Desired Style & Vibe</label>
+                                <input type="text" id="order-style" placeholder="e.g. Fast-paced, Alex Hormozi captions, lofi" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Google Drive / Storage Link</label>
+                                <input type="url" id="order-link" placeholder="https://drive.google.com/..." class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-4 gradient-bg rounded-xl font-extrabold text-base shadow-xl hover:opacity-95 transition glow-purple">
+                            Submit Project Request
+                        </button>
+                    </form>
+                </div>
+            </section>
+            `;
+        }
+
+        window.handleOrderSubmit = async function(e) {
+            e.preventDefault();
+            if (!currentUser) {
+                showToast("Please log in to submit a project.", "error");
+                navigateTo('auth');
+                return;
+            }
+
+            const newReq = {
+                title: document.getElementById('order-type').value,
+                length: document.getElementById('order-length').value,
+                deadline: document.getElementById('order-deadline').value,
+                desc: document.getElementById('order-desc').value,
+                style: document.getElementById('order-style').value,
+                link: document.getElementById('order-link').value,
+                status: 'Pending',
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                if (db) {
+                    const reqRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'requests');
+                    await addDoc(reqRef, newReq);
+                }
+                userRequests.push(newReq);
+                showToast("Your project request has been sent successfully.");
+                navigateTo('dashboard');
+            } catch (err) {
+                console.error("Error saving request:", err);
+                showToast("Failed to submit request.", "error");
+            }
+        }
+
+        function renderContactView() {
+            return `
+            <section class="max-w-4xl mx-auto px-4 py-20">
+                <div class="glass-panel p-8 md:p-12 rounded-3xl border border-primaryPurple/30 shadow-2xl">
+                    <div class="text-center mb-10">
+                        <span class="text-xs uppercase tracking-widest text-accentBlue font-bold px-3 py-1 rounded-full glass-panel border border-accentBlue/30">Get in Touch</span>
+                        <h2 class="text-3xl md:text-4xl font-black mt-3 uppercase">CONTACT STUDIO</h2>
+                        <p class="text-gray-400 text-sm mt-2">Have questions or custom partnership proposals? Send a message directly to nahidhas146@gmail.com</p>
+                    </div>
+
+                    <form onsubmit="handleContactSubmit(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Your Name</label>
+                                <input type="text" id="contact-name" value="${currentUser?.displayName || ''}" placeholder="Nahid Hasan" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Email Address</label>
+                                <input type="email" id="contact-email" value="${currentUser?.email || ''}" placeholder="name@example.com" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Subject</label>
+                            <input type="text" id="contact-subject" placeholder="Collaboration / Inquiry" required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2">Message</label>
+                            <textarea id="contact-message" rows="5" placeholder="Write your message here..." required class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primaryPurple"></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-4 gradient-bg rounded-xl font-extrabold text-base shadow-xl hover:opacity-95 transition glow-purple">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </section>
+            `;
+        }
+
+        window.handleContactSubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const subject = document.getElementById('contact-subject').value;
+            const message = document.getElementById('contact-message').value;
+            const timestamp = new Date().toLocaleString();
+
+            // Simulate sending to nahidhas146@gmail.com securely
+            console.log("Simulated Email Dispatch to nahidhas146@gmail.com:", { name, email, subject, message, timestamp });
+            showToast("Message successfully sent to nahidhas146@gmail.com! We will reply within 12 hours.");
+            e.target.reset();
+        }
+
+        function renderDashboardView() {
+            if (!currentUser) return '';
+            
+            return `
+            <section class="max-w-7xl mx-auto px-4 lg:px-12 py-16">
+                <!-- Welcome Banner -->
+                <div class="glass-panel p-8 rounded-3xl border border-primaryPurple/30 mb-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+                    <div class="flex items-center gap-6">
+                        <div class="w-20 h-20 rounded-2xl gradient-bg flex items-center justify-center text-3xl font-extrabold shadow-xl glow-purple">
+                            ${(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <h2 class="text-2xl md:text-3xl font-black">Welcome back, ${currentUser.displayName || currentUser.email.split('@')[0]}!</h2>
+                            <p class="text-gray-400 text-sm mt-1">Manage your active video edits, requests, and studio account details.</p>
+                        </div>
+                    </div>
+                    <button onclick="navigateTo('order')" class="px-6 py-3 gradient-bg rounded-xl font-bold text-sm shadow-lg glow-purple hover:opacity-95 transition">
+                        + New Project Order
+                    </button>
+                </div>
+
+                <!-- Dashboard Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                    <div class="glass-card p-6 rounded-2xl">
+                        <p class="text-xs uppercase text-gray-400 font-semibold">Active Projects</p>
+                        <h3 class="text-3xl font-black mt-2 text-accentBlue">${userProjects.length}</h3>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <p class="text-xs uppercase text-gray-400 font-semibold">Submitted Requests</p>
+                        <h3 class="text-3xl font-black mt-2 text-purple-400">${userRequests.length}</h3>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <p class="text-xs uppercase text-gray-400 font-semibold">Account Status</p>
+                        <h3 class="text-3xl font-black mt-2 text-green-400">Verified Pro</h3>
+                    </div>
+                    <div class="glass-card p-6 rounded-2xl">
+                        <p class="text-xs uppercase text-gray-400 font-semibold">Support Messages</p>
+                        <h3 class="text-3xl font-black mt-2 text-white">0 Unread</h3>
+                    </div>
+                </div>
+
+                <!-- Projects & Requests Tabs -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- My Projects -->
+                    <div class="glass-panel p-6 rounded-3xl border border-white/10">
+                        <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fa-solid fa-film text-accentBlue"></i> My Active Projects
+                        </h3>
+                        <div class="space-y-4">
+                            ${userProjects.length === 0 ? '<p class="text-gray-400 text-sm">No active projects found.</p>' : userProjects.map(p => `
+                                <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-sm">${p.title}</h4>
+                                        <p class="text-xs text-gray-400 mt-1">Deadline: ${p.deadline}</p>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold ${p.status === 'Completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : p.status === 'In Progress' ? 'bg-accentBlue/20 text-accentBlue border border-accentBlue/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'}">
+                                        ${p.status}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Submitted Requests -->
+                    <div class="glass-panel p-6 rounded-3xl border border-white/10">
+                        <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-primaryPurple"></i> Submitted Requests
+                        </h3>
+                        <div class="space-y-4">
+                            ${userRequests.length === 0 ? '<p class="text-gray-400 text-sm">No requests submitted yet.</p>' : userRequests.map(r => `
+                                <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-sm">${r.title}</h4>
+                                        <p class="text-xs text-gray-400 mt-1">Length: ${r.length} • Style: ${r.style}</p>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                        ${r.status}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </section>
+            `;
+        }
+
+        function renderFooter() {
+            return `
+            <footer class="glass-panel border-t border-white/10 py-12 px-4 lg:px-12 mt-20">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-xl gradient-bg flex items-center justify-center font-bold text-white shadow">
+                                <i class="fa-solid fa-clapperboard text-sm"></i>
+                            </div>
+                            <span class="text-lg font-black gradient-text">EDITBYNAHID</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">Professional video editing for creators and brands looking to dominate social media.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold uppercase tracking-wider mb-4 text-white">Quick Links</h4>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li><button onclick="navigateTo('home')" class="hover:text-accentBlue transition">Home</button></li>
+                            <li><button onclick="navigateTo('services')" class="hover:text-accentBlue transition">Services</button></li>
+                            <li><button onclick="navigateTo('portfolio')" class="hover:text-accentBlue transition">Portfolio</button></li>
+                            <li><button onclick="navigateTo('pricing')" class="hover:text-accentBlue transition">Pricing</button></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold uppercase tracking-wider mb-4 text-white">Legal & Support</h4>
+                        <ul class="space-y-2 text-sm text-gray-400">
+                            <li><button onclick="navigateTo('contact')" class="hover:text-accentBlue transition">Contact Studio</button></li>
+                            <li><a href="#" class="hover:text-accentBlue transition">Privacy Policy</a></li>
+                            <li><a href="#" class="hover:text-accentBlue transition">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold uppercase tracking-wider mb-4 text-white">Socials</h4>
+                        <div class="flex items-center gap-3">
+                            <a href="#" class="w-10 h-10 rounded-xl glass-panel border border-white/10 flex items-center justify-center text-gray-300 hover:text-accentBlue hover:border-accentBlue transition"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-xl glass-panel border border-white/10 flex items-center justify-center text-gray-300 hover:text-accentBlue hover:border-accentBlue transition"><i class="fa-brands fa-tiktok"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-xl glass-panel border border-white/10 flex items-center justify-center text-gray-300 hover:text-accentBlue hover:border-accentBlue transition"><i class="fa-brands fa-youtube"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-xl glass-panel border border-white/10 flex items-center justify-center text-gray-300 hover:text-accentBlue hover:border-accentBlue transition"><i class="fa-brands fa-discord"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500">
+                    <p>© 2026 EditbyNahid. All rights reserved.</p>
+                    <p class="mt-2 md:mt-0">Designed for elite creators worldwide.</p>
+                </div>
+            </footer>
+            `;
+        }
+
+        window.handleLoginSubmit = async function(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('login-identifier').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                if (auth) {
+                    const email = identifier.includes('@') ? identifier : `${identifier}@editbynahid.mock`;
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    currentUser = { uid: 'mock-user-123', email: identifier, displayName: identifier.split('@')[0] };
+                }
+                showToast("Successfully logged in!");
+                navigateTo('dashboard');
+            } catch (err) {
+                console.error("Login error:", err);
+                showToast(err.message || "Invalid login credentials", "error");
+            }
+        }
+
+        window.handleSignupSubmit = async function(e) {
+            e.preventDefault();
+            const firstname = document.getElementById('signup-firstname').value;
+            const lastname = document.getElementById('signup-lastname').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            if (password !== confirm) {
+                showToast("Passwords do not match.", "error");
+                return;
+            }
+
+            try {
+                if (auth) {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(cred.user, { displayName: `${firstname} ${lastname}` });
+                    currentUser = cred.user;
+                } else {
+                    currentUser = { uid: 'mock-user-123', email, displayName: `${firstname} ${lastname}` };
+                }
+                showToast("Account created successfully!");
+                navigateTo('dashboard');
+            } catch (err) {
+                console.error("Signup error:", err);
+                showToast(err.message || "Registration failed", "error");
+            }
+        }
+
+        window.handleForgotSubmit = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            try {
+                if (auth) {
+                    await sendPasswordResetEmail(auth, email);
+                }
+                showToast("Password reset link sent to your email.");
+                setAuthMode('login');
+            } catch (err) {
+                showToast(err.message || "Failed to send reset email", "error");
+            }
+        }
+
+        window.handleGoogleLogin = async function() {
+            try {
+                if (auth) {
+                    const provider = new GoogleAuthProvider();
+                    const result = await signInWithPopup(auth, provider);
+                    currentUser = result.user;
+                } else {
+                    currentUser = { uid: 'google-mock-123', email: 'nahid.google@gmail.com', displayName: 'Nahid Google' };
+                }
+                showToast("Successfully signed in with Google!");
+                navigateTo('dashboard');
+            } catch (err) {
+                console.error("Google Auth error:", err);
+                showToast("Google authentication failed", "error");
+            }
+        }
+
+        window.handleLogout = async function() {
+            try {
+                if (auth) {
+                    await signOut(auth);
+                }
+                currentUser = null;
+                showToast("Logged out successfully.");
+                navigateTo('home');
+            } catch (err) {
+                console.error("Logout error:", err);
+            }
+        }
+
+        // Mobile Menu Toggle Helper
+        window.toggleMobileMenu = function() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function attachEventHandlers() {
+            const btn = document.getElementById('mobile-menu-btn');
+            if (btn) {
+                btn.onclick = toggleMobileMenu;
+            }
+        }
+    </script>
+</body>
+</html>
